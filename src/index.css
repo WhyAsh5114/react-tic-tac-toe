@@ -1,5 +1,9 @@
+* {
+    font-family: monospace;
+}
+
 body {
-    font: 14px "Century Gothic", Futura, sans-serif;
+    font: 14px "Monospace", Futura, sans-serif;
     margin: 20px;
 }
 
