@@ -45,27 +45,42 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      history: [ {squares: Array(9).fill(null)}],
+      history: [{ squares: Array(9).fill(null) }],
       xIsNext: true,
       stepNumber: 0,
+      changesAt: Array(9).fill(null),
     }
   }
 
   handleClick(i) {
-    const history = this.state.history.slice(0, this.state.stepNumber + 1);
-    const current = history[history.length - 1];
-    const squares = current.squares.slice()
+    let history = this.state.history.slice(0, this.state.stepNumber + 1);
+    let current = history[history.length - 1];
+    let squares = current.squares.slice();
     if (calculateWinner(squares) || squares[i]) {
-      return; 
+      return;
     }
     squares[i] = this.state.xIsNext ? 'X' : 'O';
+    history = history.concat([{
+      squares: squares,
+    }]);
     this.setState({
-      history: history.concat([{
-        squares: squares,
-      }]),
-      stepNumber: history.length,
+      history: history,
+      stepNumber: history.length - 1,
       xIsNext: !this.state.xIsNext,
     });
+    current = history[history.length - 1];
+    const changes_at = this.state.changesAt.slice();
+    const prev_move = history[history.length - 2];
+    for (let i = 0; i < 9; i++) {
+      if (current.squares[i] !== prev_move.squares[i]) {
+        let change_at = [(Math.floor(i / 3) + 1), ((i % 3) + 1)];
+        changes_at[this.state.stepNumber] = change_at;
+        break;
+      }
+    }
+    this.setState({
+      changesAt: changes_at,
+    })
   }
 
   jumpTo(step) {
@@ -79,9 +94,9 @@ class Game extends React.Component {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
     const winner = calculateWinner(current.squares);
-
+    const changes_at = this.state.changesAt;
     const moves = history.map((step, move) => {
-      const desc = move ? 'Go to move #' + move : 'Go to game start';
+      const desc = move ? `Go to move #${move} ${move % 2 === 0 ? 'O' : 'X'}:(${changes_at[move - 1]})` : 'Go to game start';
       return (
         <li key={move}>
           <button onClick={() => this.jumpTo(move)}>{desc}</button>
@@ -99,7 +114,7 @@ class Game extends React.Component {
     return (
       <div className="game">
         <div className="game-board">
-          <Board 
+          <Board
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}
           />
